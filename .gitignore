@@ -149,3 +149,5 @@ vite.config.ts.timestamp-*
 .turbo
 
 .DS_store
+# 로컬 도구 상태
+.shrimp_data/

@@ -1,0 +1,2 @@
+- [Phase 0 결정 사항](project_phase0-progress.md) — 새 Supabase 프로젝트 사용, 문서를 코드에 맞춤
+- [MCP supabase는 공유 DB](reference_mcp-supabase-shared-db.md) — profiles 없음, 다른 앱 트리거 존재, 여기에 이 앱 스키마 실행 금지
