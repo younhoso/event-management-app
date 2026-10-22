@@ -1,0 +1,99 @@
+{
+  "model": "sonnet",
+  "plansDirectory": ".claude/plans/",
+  "env": {
+    "MAX_THINKING_TOKENS": "10000",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"
+  },
+  "outputStyle": "Explanatory",
+  "permissions": {
+    "allow": ["Bash"],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./frontend/.env*)",
+      "Read(./admin/.env*)",
+      "Read(./secrets/**)",
+      "Read(./build/**)"
+    ],
+    "ask": [],
+    "defaultMode": "plan",
+    "additionalDirectories": ["/"],
+    "env": {
+      "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    },
+    "teammateMode": "tmux"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/notification-hook.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ 세션 종료. 변경된 파일:' && git status --short 2>/dev/null || echo '(git 없음)'"
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/stop-hook.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📋 프로젝트 규칙 로딩...' && cat .claude/rules.md && echo '\n📁 현재 구조:' && tree -L 2 -I 'node_modules|.git' 2>/dev/null || ls -la"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v jq >/dev/null 2>&1; then target=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.tool_input.file_path // .tool_input.command // empty' 2>/dev/null); pattern='(^|[[:space:]/])\\.env(\\.[^[:space:]/;|&)]*)?([[:space:];|&)]|$)|config/.*\\.(yaml|yml|json)'; else target=\"$CLAUDE_TOOL_INPUT\"; pattern='\\.env|config/.*\\.(yaml|yml|json)'; fi; if echo \"$target\" | grep -qiE \"$pattern\"; then echo '🚫 [BLOCKED] 보호된 파일입니다. 수정이 필요하면 먼저 확인해주세요.' && exit 1; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v jq >/dev/null 2>&1; then f=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.tool_input.file_path // empty' 2>/dev/null); else f=$(echo \"$CLAUDE_TOOL_INPUT\" | grep -oE '[^\"]+\\.(js|ts|jsx|tsx|css|html|json|md)' | head -1); fi; if [ -n \"$f\" ] && [ -f \"$f\" ]; then npx prettier --write \"$f\" 2>/dev/null || true; fi"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚡ 컨텍스트 압축 전 핵심 규칙:' && head -50 .claude/rules.md"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1 @@
+- [스키마 상태와 확정 결정](project_schema_status.md) — schema.sql 미실행(in-place 수정), 주최자 단일 결제/토큰 해시/주최자 기본 미참석
